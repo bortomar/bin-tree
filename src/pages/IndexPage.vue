@@ -2,14 +2,15 @@
   <q-page class="row items-center justify-evenly">
     <svg height="500" width="900" xmlns="http://www.w3.org/2000/svg">
       <rect height="499" width="899" stroke-width="1" fill="none" stroke="black"/>
-      <tree-node @add-left="addLeft" @add-right="addRight" @remove-left="removeLeft"  @remove-right="removeRight" v-for="(value, key) in flatTree(tree, 250, 50, calcHeight(tree))" :key="key" :node="value" :radius="20"></tree-node>
+      <tree-node @add-left="addLeft" @add-right="addRight" @remove-left="removeLeft"  @remove-right="removeRight" v-for="(value, key) in flat" :key="key" :node="value" :radius="20"></tree-node>
     </svg>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, pushScopeId, ref, computed } from 'vue';
 import TreeNode from 'src/components/TreeNode.vue';
+
 
 type Node = {
   value: number;
@@ -30,6 +31,7 @@ export default defineComponent({
     };
     const flatTree = (node: Node, x: number, y: number, h: number, level = 1, flat: (Node & { x: number, y: number})[] = []): Node[] => {
       const dx = (h - level + 1) * 25;
+      const t = Math.pow(2, (level-1)) * 20;
       const dy = 50;
       let left: { x: number, y: number, value: number } | undefined;
       let right: { x: number, y: number, value: number } | undefined;
@@ -86,15 +88,19 @@ export default defineComponent({
       },
     });
     
-    const flat =  ref<Node[]>(flatTree(tree.value, 250, 50, calcHeight(tree.value)))
-    return { tree, flat, flatTree, calcHeight };
+    return { 
+      tree, 
+      flat: computed(() => flatTree(tree.value, 250, 50, calcHeight(tree.value))), 
+      flatTree,
+      calcHeight 
+    };
   },
   mounted() {
       //this.flat =  this.flatTree(this.tree, 250, 50, calcHeight(this.tree))
   },
   methods: {
     addLeft(node) {
-      node['left'] = { value: 66}
+      node['left'] = { value: 66  }
     },
     addRight(node) {
       node['right'] = { value: 66}
@@ -103,7 +109,7 @@ export default defineComponent({
       delete node['left']
     },
     removeRight(node) {
-      delete node['right'] 
+      delete node['right']
     },
     invertTree(node: Node): Node {
       return {
