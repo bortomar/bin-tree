@@ -1,8 +1,8 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <svg height="500" width="500" xmlns="http://www.w3.org/2000/svg">
-      <rect height="499" width="499" stroke-width="1" fill="none" stroke="black"/>
-      <tree-node @remove="remove"  @add="add" v-for="(value, key) in flatTree(tree, 250, 50, calcHeight(tree))" :key="key" :node="value" :radius="20"></tree-node>
+    <svg height="500" width="900" xmlns="http://www.w3.org/2000/svg">
+      <rect height="499" width="899" stroke-width="1" fill="none" stroke="black"/>
+      <tree-node @add-left="addLeft" @add-right="addRight" @remove-left="removeLeft"  @remove-right="removeRight" v-for="(value, key) in flatTree(tree, 250, 50, calcHeight(tree))" :key="key" :node="value" :radius="20"></tree-node>
     </svg>
   </q-page>
 </template>
@@ -93,14 +93,17 @@ export default defineComponent({
       //this.flat =  this.flatTree(this.tree, 250, 50, calcHeight(this.tree))
   },
   methods: {
-    add(node) {
+    addLeft(node) {
       node['left'] = { value: 66}
-      console.log('add')
     },
-    remove(node) {
+    addRight(node) {
+      node['right'] = { value: 66}
+    },
+    removeLeft(node) {
       delete node['left']
-
-      console.log('remove')
+    },
+    removeRight(node) {
+      delete node['right'] 
     },
     invertTree(node: Node): Node {
       return {
