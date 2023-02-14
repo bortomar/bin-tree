@@ -21,6 +21,40 @@ export default defineComponent({
   name: 'IndexPage',
   components: { TreeNode },
   setup () {
+    
+    const calcHeight = (node: Node, h = 1): number => {
+      let l: number = node.left ? calcHeight(node.left, h) : 0;
+      let r: number = node.right ?  calcHeight(node.right, h) : 0;
+
+      return h + Math.max(l, r);
+    };
+    const flatTree = (node: Node, x: number, y: number, h: number, level = 1, flat: (Node & { x: number, y: number})[] = []): Node[] => {
+      const dx = (h - level + 1) * 25;
+      const dy = 50;
+      let left: { x: number, y: number, value: number } | undefined;
+      let right: { x: number, y: number, value: number } | undefined;
+      if (node.left) {
+        left = { x: x - dx, y: y + dy, value: node.left.value };
+        flatTree(node.left, left.x, left.y, h, level + 1, flat);
+      }
+
+      if (node.right) {
+        right = { x: x + dx, y: y + dy, value: node.right.value };
+        flatTree(node.right, right.x, right.y, h, level + 1, flat);
+      }
+      node['x'] = x;
+      node['y'] = y;
+      flat.unshift(node);
+        //{
+      //   value: node.value,
+      //   x,
+      //   y,
+      //   ...(left !== undefined && { left }),
+      //   ...(right !== undefined && { right }),
+      // });
+
+      return flat;
+    };
     const tree = ref({
       value: 1,
       left: {
@@ -51,17 +85,21 @@ export default defineComponent({
         },
       },
     });
-    return { tree, flat: ref<Node[]>([]) };
+    
+    const flat =  ref<Node[]>(flatTree(tree.value, 250, 50, calcHeight(tree.value)))
+    return { tree, flat, flatTree, calcHeight };
   },
   mounted() {
-      this.flat =  this.flatTree(this.tree, 250, 50, calcHeight(this.tree))
+      //this.flat =  this.flatTree(this.tree, 250, 50, calcHeight(this.tree))
   },
   methods: {
     add(node) {
-      node['left'] = { value: 6 }
+      node['left'] = { value: 66}
       console.log('add')
     },
-    remove() {
+    remove(node) {
+      delete node['left']
+
       console.log('remove')
     },
     invertTree(node: Node): Node {
@@ -71,36 +109,7 @@ export default defineComponent({
         ...(node.right && { left: this.invertTree(node.right) }),
       }
     },    
-    calcHeight(node: Node, h = 1): number {
-      let l: number = node.left ? this.calcHeight(node.left, h) : 0;
-      let r: number = node.right ? this.calcHeight(node.right, h) : 0;
-
-      return h + Math.max(l, r);
-    },
-    flatTree (node: Node, x: number, y: number, h: number, level = 1, flat: (Node & { x: number, y: number})[] = []): Node[]  {
-      const dx = (h - level + 1) * 25;
-      const dy = 50;
-      let left: { x: number, y: number, value: number } | undefined;
-      let right: { x: number, y: number, value: number } | undefined;
-      if (node.left) {
-        left = { x: x - dx, y: y + dy, value: node.left.value };
-        this.flatTree(node.left, left.x, left.y, h, level + 1, flat);
-      }
-
-      if (node.right) {
-        right = { x: x + dx, y: y + dy, value: node.right.value };
-        this.flatTree(node.right, right.x, right.y, h, level + 1, flat);
-      }
-      flat.unshift({
-        value: node.value,
-        x,
-        y,
-        ...(left !== undefined && { left }),
-        ...(right !== undefined && { right }),
-      });
-
-      return flat;
-    }
+    
   }
 });
 </script>
