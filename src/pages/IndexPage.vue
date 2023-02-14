@@ -1,8 +1,30 @@
 <template>
-  <q-page class="row items-center justify-evenly">
-    <svg height="500" width="900" xmlns="http://www.w3.org/2000/svg">
-      <rect height="499" width="899" stroke-width="1" fill="none" stroke="black"/>
-      <tree-node @add-left="addLeft" @add-right="addRight" @remove-left="removeLeft"  @remove-right="removeRight" v-for="(value, key) in flat" :key="key" :node="value" :radius="20"></tree-node>
+  <q-page class="row">
+    <svg height="300" :width="width" xmlns="http://www.w3.org/2000/svg">
+      <rect height="298" :width="width-2" stroke-width="1" fill="none" stroke="black"/>
+      <tree-node 
+        v-for="(value, key) in flat" 
+        :key="key" 
+        :node="value" 
+        :radius="20"
+        @add-left="addLeft"
+        @add-right="addRight"
+        @remove-left="removeLeft"
+        @remove-right="removeRight"
+      ></tree-node>
+    </svg>
+    <svg height="300" :width="width" xmlns="http://www.w3.org/2000/svg">
+      <rect height="298" :width="width-2" stroke-width="1" fill="none" stroke="black"/>  
+      <tree-node 
+        v-for="(value, key) in invertFlat" 
+        :key="key" 
+        :node="value" 
+        :radius="20"
+        @add-left="addLeft"
+        @add-right="addRight"
+        @remove-left="removeLeft"
+        @remove-right="removeRight"
+      ></tree-node>
     </svg>
   </q-page>
 </template>
@@ -30,8 +52,9 @@ export default defineComponent({
       return h + Math.max(l, r);
     };
     const flatTree = (node: Node, x: number, y: number, h: number, level = 1, flat: (Node & { x: number, y: number})[] = []): Node[] => {
-      const dx = (h - level + 1) * 25;
-      const t = Math.pow(2, (level-1)) * 20;
+      // const tdx =  (h-level+1)*20;
+      const dx = Math.pow(2, (h-level))*25;
+      // console.log(node.value+' '+tdx)
       const dy = 50;
       let left: { x: number, y: number, value: number } | undefined;
       let right: { x: number, y: number, value: number } | undefined;
@@ -88,9 +111,26 @@ export default defineComponent({
       },
     });
     
+    const getWidth = (n) => {
+      const h = calcHeight(n);
+      const w = Math.pow(2, h) * 50;
+      return w;
+    };
+
+    
+    const invertTree = (node: Node): Node => {
+      return {
+        value: node.value,
+        ...(node.left && { right: invertTree(node.left) }),
+        ...(node.right && { left: invertTree(node.right) }),
+      }
+    };
+
     return { 
       tree, 
-      flat: computed(() => flatTree(tree.value, 250, 50, calcHeight(tree.value))), 
+      flat: computed(() => flatTree(tree.value, getWidth(tree.value)/2, 50, calcHeight(tree.value))), 
+      invertFlat: computed(() => flatTree(invertTree(tree.value), getWidth(tree.value)/2, 50, calcHeight(tree.value))), 
+      width: computed(() => getWidth(tree.value)), 
       flatTree,
       calcHeight 
     };
@@ -99,6 +139,7 @@ export default defineComponent({
       //this.flat =  this.flatTree(this.tree, 250, 50, calcHeight(this.tree))
   },
   methods: {
+    
     addLeft(node) {
       node['left'] = { value: 66  }
     },
@@ -110,14 +151,7 @@ export default defineComponent({
     },
     removeRight(node) {
       delete node['right']
-    },
-    invertTree(node: Node): Node {
-      return {
-        value: node.value,
-        ...(node.left && { right: this.invertTree(node.left) }),
-        ...(node.right && { left: this.invertTree(node.right) }),
-      }
-    },    
+    }   
     
   }
 });
