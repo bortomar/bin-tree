@@ -10,7 +10,13 @@
         <q-btn flat v-if="!node.right"  dense @click="$emit('add-right', node)" label="+"/>
         <q-btn flat v-else  dense @click="$emit('remove-right', node)" label="-"/>
     </foreignObject>
-    <text :x="node.x" :y="node.y" class="small">{{ node.value }}</text>
+    <text 
+    	:x="node.x-5" 
+      :y="node.y+4" 
+      style="font-size: 10px"
+     >
+     	{{ node.value }}
+     </text>
 </template>
 
 <script lang="ts">
@@ -23,6 +29,7 @@ type Node = {
   left?: Node;
   right?: Node;
 }
+const offX = 15
 
 export default defineComponent({
   name: 'TreeNode',

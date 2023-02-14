@@ -1,19 +1,30 @@
 <template>
-  <q-page class="row">
-    <svg height="300" :width="width" xmlns="http://www.w3.org/2000/svg">
-      <rect height="298" :width="width-2" stroke-width="1" fill="none" stroke="black"/>
+  <q-page style="border: 1px dashed black;  background: yellow">
+    <svg
+    	style="border: red 2px solid;"
+      version="1.1"
+      :viewBox="`0 0 ${width} 500`"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+<!--       <rect 
+      	height="100%" 
+        width="100%" 
+        stroke-width="5" 
+        fill="none" 
+        stroke="black"
+       /> -->
       <tree-node 
         v-for="(value, key) in flat" 
         :key="key" 
         :node="value" 
-        :radius="20"
+        :radius="radius"
         @add-left="addLeft"
         @add-right="addRight"
         @remove-left="removeLeft"
         @remove-right="removeRight"
       ></tree-node>
     </svg>
-    <svg height="300" :width="width" xmlns="http://www.w3.org/2000/svg">
+    <!--svg height="300" :width="width" xmlns="http://www.w3.org/2000/svg">
       <rect height="298" :width="width-2" stroke-width="1" fill="none" stroke="black"/>  
       <tree-node 
         v-for="(value, key) in invertFlat" 
@@ -21,12 +32,12 @@
         :node="value" 
         :radius="20"
       ></tree-node>
-    </svg>
+    </svg-->
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, pushScopeId, ref, computed } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import TreeNode from 'src/components/TreeNode.vue';
 
 type Node = {
@@ -36,7 +47,7 @@ type Node = {
   left?: Node;
   right?: Node;
 }
-
+const offX = 10
 export default defineComponent({
   name: 'IndexPage',
   components: { TreeNode },
@@ -49,8 +60,8 @@ export default defineComponent({
       return h + Math.max(l, r);
     };
     const flatTree = (node: Node, x: number, y: number, h: number, level = 1, flat: Node[] = []): Node[] => {
-      const dx = Math.pow(2, (h-level)) * 25;
-      const dy = 50;
+      const dx = Math.pow(2, (h-level)) * offX;
+      const dy = 2 * offX;
       let left: { x: number, y: number, value: number } | undefined;
       let right: { x: number, y: number, value: number } | undefined;
       if (node.left) {
@@ -100,10 +111,10 @@ export default defineComponent({
         },
       },
     });
-    
+    const radius = 10
     const getWidth = (n: Node) => {
       const h = calcHeight(n);
-      const w = Math.pow(2, h) * 50;
+      const w = Math.pow(2, h) *  (offX + radius);
       return w;
     };
 
@@ -122,7 +133,8 @@ export default defineComponent({
       invertFlat: computed(() => flatTree(invertTree(tree.value), getWidth(tree.value) / 2, 50, calcHeight(tree.value))), 
       width: computed(() => getWidth(tree.value)), 
       flatTree,
-      calcHeight 
+      calcHeight,
+      radius: ref(radius)
     };
   },
   methods: {
