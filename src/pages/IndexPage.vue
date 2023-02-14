@@ -20,10 +20,6 @@
         :key="key" 
         :node="value" 
         :radius="20"
-        @add-left="addLeft"
-        @add-right="addRight"
-        @remove-left="removeLeft"
-        @remove-right="removeRight"
       ></tree-node>
     </svg>
   </q-page>
@@ -33,9 +29,10 @@
 import { defineComponent, pushScopeId, ref, computed } from 'vue';
 import TreeNode from 'src/components/TreeNode.vue';
 
-
 type Node = {
   value: number;
+  x?: number;
+  y?: number;
   left?: Node;
   right?: Node;
 }
@@ -51,10 +48,8 @@ export default defineComponent({
 
       return h + Math.max(l, r);
     };
-    const flatTree = (node: Node, x: number, y: number, h: number, level = 1, flat: (Node & { x: number, y: number})[] = []): Node[] => {
-      // const tdx =  (h-level+1)*20;
-      const dx = Math.pow(2, (h-level))*25;
-      // console.log(node.value+' '+tdx)
+    const flatTree = (node: Node, x: number, y: number, h: number, level = 1, flat: Node[] = []): Node[] => {
+      const dx = Math.pow(2, (h-level)) * 25;
       const dy = 50;
       let left: { x: number, y: number, value: number } | undefined;
       let right: { x: number, y: number, value: number } | undefined;
@@ -67,17 +62,12 @@ export default defineComponent({
         right = { x: x + dx, y: y + dy, value: node.right.value };
         flatTree(node.right, right.x, right.y, h, level + 1, flat);
       }
+
       node['x'] = x;
       node['y'] = y;
+      
       flat.unshift(node);
-        //{
-      //   value: node.value,
-      //   x,
-      //   y,
-      //   ...(left !== undefined && { left }),
-      //   ...(right !== undefined && { right }),
-      // });
-
+      
       return flat;
     };
     const tree = ref({
@@ -111,7 +101,7 @@ export default defineComponent({
       },
     });
     
-    const getWidth = (n) => {
+    const getWidth = (n: Node) => {
       const h = calcHeight(n);
       const w = Math.pow(2, h) * 50;
       return w;
@@ -128,28 +118,24 @@ export default defineComponent({
 
     return { 
       tree, 
-      flat: computed(() => flatTree(tree.value, getWidth(tree.value)/2, 50, calcHeight(tree.value))), 
-      invertFlat: computed(() => flatTree(invertTree(tree.value), getWidth(tree.value)/2, 50, calcHeight(tree.value))), 
+      flat: computed(() => flatTree(tree.value, getWidth(tree.value) / 2, 50, calcHeight(tree.value))), 
+      invertFlat: computed(() => flatTree(invertTree(tree.value), getWidth(tree.value) / 2, 50, calcHeight(tree.value))), 
       width: computed(() => getWidth(tree.value)), 
       flatTree,
       calcHeight 
     };
   },
-  mounted() {
-      //this.flat =  this.flatTree(this.tree, 250, 50, calcHeight(this.tree))
-  },
   methods: {
-    
-    addLeft(node) {
-      node['left'] = { value: 66  }
+    addLeft(node: Node) {
+      node['left'] = { value: 66 }
     },
-    addRight(node) {
-      node['right'] = { value: 66}
+    addRight(node: Node) {
+      node['right'] = { value: 66 }
     },
-    removeLeft(node) {
+    removeLeft(node: Node) {
       delete node['left']
     },
-    removeRight(node) {
+    removeRight(node: Node) {
       delete node['right']
     }   
     
