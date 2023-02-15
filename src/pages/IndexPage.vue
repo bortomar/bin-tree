@@ -47,40 +47,12 @@ type Node = {
   left?: Node;
   right?: Node;
 }
-const offX = 10
+
 export default defineComponent({
   name: 'IndexPage',
   components: { TreeNode },
   setup () {
     
-    const calcHeight = (node: Node, h = 1): number => {
-      let l: number = node.left ? calcHeight(node.left, h) : 0;
-      let r: number = node.right ?  calcHeight(node.right, h) : 0;
-
-      return h + Math.max(l, r);
-    };
-    const flatTree = (node: Node, x: number, y: number, h: number, level = 1, flat: Node[] = []): Node[] => {
-      const dx = Math.pow(2, (h-level)) * offX;
-      const dy = 2 * offX;
-      let left: { x: number, y: number, value: number } | undefined;
-      let right: { x: number, y: number, value: number } | undefined;
-      if (node.left) {
-        left = { x: x - dx, y: y + dy, value: node.left.value };
-        flatTree(node.left, left.x, left.y, h, level + 1, flat);
-      }
-
-      if (node.right) {
-        right = { x: x + dx, y: y + dy, value: node.right.value };
-        flatTree(node.right, right.x, right.y, h, level + 1, flat);
-      }
-
-      node['x'] = x;
-      node['y'] = y;
-      
-      flat.unshift(node);
-      
-      return flat;
-    };
     const tree = ref({
       value: 1,
       left: {
@@ -111,10 +83,44 @@ export default defineComponent({
         },
       },
     });
-    const radius = 10
+
+		const offX = ref(10)
+    
+    const radius = ref(10)
+
+    const calcHeight = (node: Node, h = 1): number => {
+      let l: number = node.left ? calcHeight(node.left, h) : 0;
+      let r: number = node.right ?  calcHeight(node.right, h) : 0;
+
+      return h + Math.max(l, r);
+    };
+
+    const flatTree = (node: Node, x: number, y: number, h: number, level = 1, flat: Node[] = []): Node[] => {
+      const dx = Math.pow(2, h - level) * offX.value;
+      const dy = 2 * offX.value;
+      let left: { x: number, y: number, value: number } | undefined;
+      let right: { x: number, y: number, value: number } | undefined;
+      if (node.left) {
+        left = { x: x - dx, y: y + dy, value: node.left.value };
+        flatTree(node.left, left.x, left.y, h, level + 1, flat);
+      }
+
+      if (node.right) {
+        right = { x: x + dx, y: y + dy, value: node.right.value };
+        flatTree(node.right, right.x, right.y, h, level + 1, flat);
+      }
+
+      node['x'] = x;
+      node['y'] = y;
+      
+      flat.unshift(node);
+      
+      return flat;
+    };
+
     const getWidth = (n: Node) => {
       const h = calcHeight(n);
-      const w = Math.pow(2, h) *  (offX + radius);
+      const w = Math.pow(2, h) *  (offX.value + radius.value);
       return w;
     };
 
@@ -126,7 +132,7 @@ export default defineComponent({
         ...(node.right && { left: invertTree(node.right) }),
       }
     };
-
+    
     return { 
       tree, 
       flat: computed(() => flatTree(tree.value, getWidth(tree.value) / 2, 50, calcHeight(tree.value))), 
@@ -134,7 +140,8 @@ export default defineComponent({
       width: computed(() => getWidth(tree.value)), 
       flatTree,
       calcHeight,
-      radius: ref(radius)
+      radius,
+      offX
     };
   },
   methods: {
